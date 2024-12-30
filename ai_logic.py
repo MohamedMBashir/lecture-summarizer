@@ -6,6 +6,7 @@ import tempfile
 from typing import List
 import logging
 from datetime import datetime
+import streamlit as st
 
 # Configure logging with timestamp
 logging.basicConfig(
@@ -15,9 +16,46 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def get_api_key(key_name: str) -> str:
+    """
+    Get API key from different sources in order:
+    1. Environment variable
+    2. Streamlit secrets
+    3. User input (stored in session state)
+    """
+    # First check environment variables (including .env)
+    api_key = os.getenv(key_name)
+    
+    # Then check Streamlit secrets
+    if not api_key and hasattr(st, 'secrets'):
+        api_key = st.secrets.get(key_name)
+    
+    # Finally, check session state or prompt user
+    if not api_key:
+        if key_name not in st.session_state:
+            st.session_state[key_name] = st.text_input(
+                f"Please enter your {key_name}:",
+                type="password",
+                key=f"input_{key_name}"
+            )
+        api_key = st.session_state[key_name]
+        
+    if not api_key:
+        st.error(f"{key_name} is required to proceed!")
+        st.stop()
+    
+    return api_key
+
 # Initialize AI models
-genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+def initialize_ai():
+    gemini_key = get_api_key('GEMINI_API_KEY')
+    openai_key = get_api_key('OPENAI_API_KEY')
+    
+    genai.configure(api_key=gemini_key)
+    return OpenAI(api_key=openai_key)
+
+# Global OpenAI client
+openai_client = initialize_ai()
 
 class AudioTranscriber:
     CHUNK_DURATION = 10 * 60 * 1000  # 10 minutes in milliseconds
@@ -94,10 +132,10 @@ class ContentAnalyzer:
         logger.info("Starting summary generation")
         try:
             response = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are an expert at creating detailed, intuitive summaries of academic lectures. Break down complex topics into clear explanations. "},
-                    {"role": "user", "content": f"Please provide a very detailed and intuitive summary of this lecture transcription: {transcription}"}
+                    {"role": "user", "content": f"Please provide a very detailed and a very intuitive engaging summary of this lecture transcription: {transcription}"}
                 ]
             )
             logger.info("Summary successfully generated")
