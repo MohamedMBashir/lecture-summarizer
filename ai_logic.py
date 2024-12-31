@@ -135,8 +135,8 @@ class ContentAnalyzer:
             response = openai_client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "You are an expert at creating detailed, intuitive summaries of academic lectures. Break down complex topics into clear explanations. "},
-                    {"role": "user", "content": f"Please provide a very detailed and a very intuitive engaging summary of this lecture transcription: {transcription}"}
+                    {"role": "system", "content": "You are an expert at creating detailed, intuitive summaries of universities lectures. You break down complex topics into clear explanations. All those who read your summary will understand the lecture by their heart and be able to score 100% on their exams. "},
+                    {"role": "user", "content": f"Please provide a very detailed, comprehensive and a very intuitive engaging summary of this lecture transcription: {transcription}"}
                 ]
             )
             logger.info("Summary successfully generated")

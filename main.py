@@ -165,8 +165,8 @@ def process_input():
         st.session_state.user_input = ""
 
 # UI Layout
-st.title("📚 Lecture Analyzer")
-st.markdown("Transform your audio lectures into interactive learning experiences.")
+st.title("📚 Ibo Lecture Bro 👴🏿")
+st.markdown("I think I should get paid for this.")
 
 # File upload with better styling
 with st.container():
