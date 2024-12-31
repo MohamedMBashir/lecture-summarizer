@@ -72,6 +72,7 @@ class AudioTranscriber:
                 return temp_wav.name
         except Exception as e:
             logger.error(f"Error converting audio to WAV: {str(e)}")
+            st.error("Failed to process audio file. Please ensure ffmpeg is installed and the file format is supported.")
             raise
 
     @staticmethod

@@ -82,14 +82,19 @@ def process_audio(audio_file):
     logger.info(f"Starting to process audio file: {audio_file.name}")
     logger.info(f"File size: {audio_file.size / (1024*1024):.2f} MB")
     
+    # Initialize variables
+    tmp_file_path = None
+    wav_path = None
+    chunks = []
+    
     with st.spinner('Processing audio file...'):
-        # Save uploaded file temporarily
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            tmp_file.write(audio_file.getvalue())
-            tmp_file_path = tmp_file.name
-            logger.info("Temporary file created successfully")
-
         try:
+            # Save uploaded file temporarily
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                tmp_file.write(audio_file.getvalue())
+                tmp_file_path = tmp_file.name
+                logger.info("Temporary file created successfully")
+
             # Convert to WAV
             logger.info("Starting WAV conversion")
             wav_path = AudioTranscriber.convert_to_wav(tmp_file_path)
@@ -124,13 +129,20 @@ def process_audio(audio_file):
             )
             logger.info("Summary generated successfully")
             
+        except Exception as e:
+            logger.error(f"Error processing audio: {str(e)}")
+            st.error("An error occurred while processing the audio file. Please try again.")
+            
         finally:
             # Cleanup temporary files
             logger.info("Cleaning up temporary files")
-            os.unlink(tmp_file_path)
-            os.unlink(wav_path)
+            if tmp_file_path and os.path.exists(tmp_file_path):
+                os.unlink(tmp_file_path)
+            if wav_path and os.path.exists(wav_path):
+                os.unlink(wav_path)
             for chunk in chunks:
-                os.unlink(chunk)
+                if os.path.exists(chunk):
+                    os.unlink(chunk)
             logger.info("Temporary files cleaned up successfully")
             logger.info("Audio processing completed successfully")
 
